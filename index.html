@@ -83,6 +83,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .linegrid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:9px;padding-top:9px;border-top:1px dashed var(--line)}
 .linegrid .lf{display:block;font-size:11px;font-weight:700;margin-bottom:3px}
 .linegrid input{padding:6px 8px;font-size:13px;border-radius:8px;background:#fff}
+.linegrid .fixline{padding:6px 8px;font-size:12.5px;border-radius:8px;background:#f3f5f9;border:1px solid var(--line);color:var(--sub);font-weight:700;text-align:center}
 .subjcard.totalcard{background:#fffdf7;border-color:#f0e2c4}
 .subjcard.totalcard .nm{color:#b26a00}
 .entry{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line2)}
@@ -97,8 +98,15 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .badge.exam{background:#fff3e0;color:#b26a00}
 .bar{height:6px;border-radius:3px;background:#eef1f6;overflow:hidden;margin-top:6px}
 .bar i{display:block;height:100%;background:var(--brand);border-radius:3px}
-.ctrlrow{display:grid;grid-template-columns:1fr 1fr;gap:11px}
-@media(max-width:480px){.ctrlrow{grid-template-columns:1fr}}
+/* 单行控制条：年级 + 科目 + 显示选项全部横向排列，超出宽度时整条横向滚动 */
+.ctrlbar{display:flex;align-items:center;gap:7px;overflow-x:auto;padding:1px 1px 5px;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
+.ctrlbar::-webkit-scrollbar{height:3px}
+.ctrlbar::-webkit-scrollbar-thumb{background:#dfe4ee;border-radius:3px}
+.ctrlbar .chips{flex-wrap:nowrap;flex:0 0 auto;padding-top:0}
+.ctrlbar .chip{padding:6px 11px;font-size:12.5px;flex:0 0 auto}
+.ctrlbar select{width:auto;min-width:76px;flex:0 0 auto;padding:6px 8px;font-size:13px}
+.ctrlbar .f{flex:0 0 auto;white-space:nowrap;margin:0}
+.csep{flex:0 0 auto;width:1px;height:22px;background:var(--line2);margin:0 3px}
 .chartbox{position:relative;width:100%;height:300px}
 .chartbox svg{width:100%;height:100%;display:block;overflow:visible}
 .chartgrid{display:flex;flex-direction:column;gap:11px;margin-top:8px}
@@ -216,21 +224,16 @@ ul.steps b{color:var(--txt)}
   <section class="tab" id="tab-board">
     <div class="card">
       <h2>成绩看板 <small>折线趋势 · 每科单独成图</small></h2>
-      <div class="ctrlrow">
-        <div>
-          <label class="f">年级</label>
-          <select id="bGrade"></select>
-        </div>
-        <div>
-          <label class="f">科目（可多选）</label>
-          <div class="chips" id="bSubj" style="padding-top:2px"></div>
-        </div>
-      </div>
-      <div style="margin-top:11px">
-        <label class="f">显示选项</label>
+      <div class="ctrlbar">
+        <label class="f">年级</label>
+        <select id="bGrade"></select>
+        <span class="csep"></span>
+        <div class="chips" id="bSubj"></div>
+        <span class="csep"></span>
         <div class="chips">
           <button class="chip on" id="bTotalOn">显示总分</button>
           <button class="chip on" id="bLinesOn">显示分数线</button>
+          <button class="chip on" id="bLabelOn">数据标签</button>
           <button class="chip" id="bAllSubj">全选科目</button>
           <button class="chip" id="bNoSubj">仅看总分</button>
         </div>
@@ -243,20 +246,22 @@ ul.steps b{color:var(--txt)}
   <!-- TAB 3 -->
   <section class="tab" id="tab-rate">
     <div class="card">
-      <h2>得分率看板 <small id="rSub">得分率 = 得分 ÷ 满分</small></h2>
-      <div class="ctrlrow">
-        <div>
-          <label class="f">年级</label>
-          <select id="rGrade"></select>
-        </div>
-        <div>
-          <label class="f">科目（可多选）</label>
-          <div class="chips" id="rSubj" style="padding-top:2px"></div>
+      <h2>得分率看板 <small id="rSub">得分率 = 得分 ÷ 满分 · 每科单独成图</small></h2>
+      <div class="ctrlbar">
+        <label class="f">年级</label>
+        <select id="rGrade"></select>
+        <span class="csep"></span>
+        <div class="chips" id="rSubj"></div>
+        <span class="csep"></span>
+        <div class="chips">
+          <button class="chip on" id="rTotalOn">显示总分</button>
+          <button class="chip on" id="rLabelOn">数据标签</button>
+          <button class="chip" id="rAllSubj">全选科目</button>
+          <button class="chip" id="rNoSubj">仅看总分</button>
         </div>
       </div>
       <div class="kpi" id="rKpi"></div>
-      <div class="legend" id="rLegend"></div>
-      <div class="chartbox" id="rChartBox" style="margin-top:8px"></div>
+      <div class="chartgrid" id="rCharts"></div>
       <div class="hint" id="rHint"></div>
     </div>
     <div class="card">
@@ -303,7 +308,7 @@ ul.steps b{color:var(--txt)}
       </div>
     </div>
   </section>
-  <footer class="ver">逐光记 · 版本 <span id="verTag">v2026.10.15-3</span> · 每科单独成图</footer>
+  <footer class="ver">逐光记 · 版本 <span id="verTag">v2026.10.18-2</span> · 高中五线仅按总分划线</footer>
 </main>
 </div>
 
@@ -344,24 +349,39 @@ var CHILD_TINT = ["#2f6bff","#e5484d","#1f9d55","#e08c00","#8b5cf6","#0ea5e9","#
 var GRADE_LABEL = {1:"一年级",2:"二年级",3:"三年级",4:"四年级",5:"五年级",6:"六年级",
   7:"七年级",8:"八年级",9:"九年级",10:"高一",11:"高二",12:"高三"};
 var GRADE_SHORT = {1:"一",2:"二",3:"三",4:"四",5:"五",6:"六",7:"七",8:"八",9:"九",10:"高一",11:"高二",12:"高三"};
-var EXAM_TYPES = ["期中","期末","月考","随堂小测"];
-// 分数线仅 7-9 年级体现，且逐科不同
-var LINE_GRADES = [7,8,9];
-var LINE_KEYS = ["aPlus","a","b"];
-var LINE_LABEL = {aPlus:"A+线", a:"A线", b:"B线"};
-var LINE_SHORT = {aPlus:"A+", a:"A", b:"B"};
-var LINE_COLOR = {aPlus:"#1f9d55", a:"#2f6bff", b:"#b26a00"};
+var EXAM_TYPES = ["期中","期末","月考","调考","随堂小测"];
+// 分数线：七/八/九年级为 A+/A/B 三线；高一至高三为超一流/双一流/高优/一本/本科五线，均逐科不同
+var LINE_GRADES = [7,8,9,10,11,12];
+var LINE_KEYS = ["aPlus","a","b"];                          // 7-9 年级三线
+var LINE_KEYS_HS = ["chao","shuang","gaoyou","yiben","benke"]; // 高中五线
+var LINE_LABEL = {aPlus:"A+线", a:"A线", b:"B线",
+  chao:"超一流线", shuang:"双一流线", gaoyou:"高优线", yiben:"一本线", benke:"本科线"};
+var LINE_SHORT = {aPlus:"A+", a:"A", b:"B",
+  chao:"超一流", shuang:"双一流", gaoyou:"高优", yiben:"一本", benke:"本科"};
+var LINE_COLOR = {aPlus:"#1f9d55", a:"#2f6bff", b:"#b26a00",
+  chao:"#8b5cf6", shuang:"#2f6bff", gaoyou:"#e5484d", yiben:"#e08c00", benke:"#0ea5e9"};
+var LINE_BADGE_BG = {aPlus:"#e8f5ec", a:"#eaf1ff", b:"#fff3e0",
+  chao:"#f2ebff", shuang:"#eaf1ff", gaoyou:"#fdecec", yiben:"#fdf1de", benke:"#e4f6fb"};
+var GAOYOU_TOTAL = 600; // 高中总分高优线固定 600 分（无需填写）
 var TOTAL_KEY = "__total__";
 
 function hasLines(g){ return LINE_GRADES.indexOf(parseInt(g,10))>=0; }
+function lineKeys(g){ return parseInt(g,10)>=10 ? LINE_KEYS_HS : LINE_KEYS; }
+// 总分线取值：高中总分的高优线固定为 600
+function totalLineValue(o, g, k){
+  if(o && o[k]!=null) return o[k];
+  if(parseInt(g,10)>=10 && k==="gaoyou") return GAOYOU_TOTAL;
+  return null;
+}
 function defFull(g){ var o={}; SUBJECTS[g].forEach(function(s){o[s]=100;}); return o; }
-// 每条线：{ 科目名: 分值, __total__: 总分线 }
+// 每条线：{ 科目名: {线键: 分值}, __total__: 总分线 }
+function blankLineBox(g){ var o={}; lineKeys(g).forEach(function(k){ o[k]=null; }); return o; }
 function defLines(g){
+  if(!hasLines(g)) return {};
   var o={};
-  SUBJECTS[g].forEach(function(s){ 
-    o[s]={aPlus:null,a:null,b:null};
-  });
-  o[TOTAL_KEY]={aPlus:null,a:null,b:null};
+  // 高中五线只按总分划线，不逐科
+  if(g<10) SUBJECTS[g].forEach(function(s){ o[s]=blankLineBox(g); });
+  o[TOTAL_KEY]=blankLineBox(g);
   return o;
 }
 
@@ -447,42 +467,49 @@ function normRec(r,kidId,grade){
   return { id:r.id||uid(), kidId:kidId, grade:g, ym:ym,
     exam:ex, scores:out, full:of, lines:lines, ts:r.ts||Date.now() };
 }
-// 兼容三种形态：新（逐科）+ 旧版（全局 aPlus/a/b 数值）+ 缺省
+// 兼容三种形态：新（逐科）+ 旧版（全局 aPlus/a/b 数值，仅七/八/九年级曾有）+ 缺省
 function normLines(src, rec, g){
   var out=defLines(g);
   if(!hasLines(g)) return out;
+  var ks=lineKeys(g);
   function pick(v){ if(v===undefined||v===null||v==="") return null; var n=Number(v); return (isNaN(n)||n<0)?null:n; }
   if(src && typeof src==="object"){
     var isNew=false;
     SUBJECTS[g].forEach(function(s){ if(src[s] && typeof src[s]==="object") isNew=true; });
     if(src[TOTAL_KEY] && typeof src[TOTAL_KEY]==="object") isNew=true;
     if(isNew){
-      SUBJECTS[g].forEach(function(s){
+      // 高中（10-12）只保留总分线，逐科线结构已废弃，直接丢弃
+      if(g<10) SUBJECTS[g].forEach(function(s){
         var o=src[s]||{};
-        out[s]={ aPlus:pick(o.aPlus), a:pick(o.a), b:pick(o.b) };
+        var box={}; ks.forEach(function(k){ box[k]=pick(o[k]); });
+        out[s]=box;
       });
       var t=src[TOTAL_KEY]||{};
-      out[TOTAL_KEY]={ aPlus:pick(t.aPlus), a:pick(t.a), b:pick(t.b) };
+      var tb={}; ks.forEach(function(k){ tb[k]=pick(t[k]); });
+      out[TOTAL_KEY]=tb;
       return out;
     }
-    // 旧版：src 为 {aPlus:88,a:80,b:68} 全局线
-    var old={ aPlus:pick(src.aPlus), a:pick(src.a), b:pick(src.b) };
-    if(old.aPlus==null&&old.a==null&&old.b==null && rec){
-      old={ aPlus:pick(rec.aPlus), a:pick(rec.a), b:pick(rec.b) };
-    }
-    if(old.aPlus!=null||old.a!=null||old.b!=null){
-      SUBJECTS[g].forEach(function(s){ out[s]={aPlus:old.aPlus,a:old.a,b:old.b}; });
+    // 旧版：src 为 {aPlus:88,a:80,b:68} 全局线（高中无此旧形态，直接忽略）
+    if(g<10){
+      var old={ aPlus:pick(src.aPlus), a:pick(src.a), b:pick(src.b) };
+      if(old.aPlus==null&&old.a==null&&old.b==null && rec){
+        old={ aPlus:pick(rec.aPlus), a:pick(rec.a), b:pick(rec.b) };
+      }
+      if(old.aPlus!=null||old.a!=null||old.b!=null){
+        SUBJECTS[g].forEach(function(s){ out[s]={aPlus:old.aPlus,a:old.a,b:old.b}; });
+      }
     }
   }
   return out;
 }
-// 判断某次记录是否填过任何分数线
+// 判断某次记录是否填过任何分数线（不含高中总分固定的高优线）
 function linesFilled(r){
   if(!r.lines || !hasLines(r.grade)) return false;
+  var ks=lineKeys(r.grade);
   var any=false;
-  SUBJECTS[r.grade].forEach(function(s){ var o=r.lines[s]; if(o&&(o.aPlus!=null||o.a!=null||o.b!=null)) any=true; });
+  if(r.grade<10) SUBJECTS[r.grade].forEach(function(s){ var o=r.lines[s]; if(o&&ks.some(function(k){return o[k]!=null;})) any=true; });
   var t=r.lines[TOTAL_KEY];
-  if(t&&(t.aPlus!=null||t.a!=null||t.b!=null)) any=true;
+  if(t&&ks.some(function(k){return t[k]!=null;})) any=true;
   return any;
 }
 
@@ -520,6 +547,12 @@ function colorOf(subj){ var i=HS_SUBJECTS.indexOf(subj); if(i<0) i=SUBJECTS[9].i
 function sumScore(r){ var t=0,any=false; SUBJECTS[r.grade].forEach(function(s){ if(r.scores[s]!=null){ t+=r.scores[s]; any=true; } }); return any?t:null; }
 function sumFull(r){ var t=0; SUBJECTS[r.grade].forEach(function(s){ t+=(r.full[s]||100); }); return t; }
 function rateVal(r){ var s=sumScore(r),f=sumFull(r); return (s==null||!f)?null:s/f; }
+// 随堂小测可能是非全科考试（只考几门），总分口径不可比，故不参与任何总分统计
+function isQuiz(r){ return r.exam==="随堂小测"; }
+// 已考科目的满分合计（随堂小测展示总分时用，避免拿部分科目分去比全科满分）
+function sumFullScored(r){
+  var t=0; SUBJECTS[r.grade].forEach(function(s){ if(r.scores[s]!=null) t+=(r.full[s]||100); }); return t;
+}
 
 /* ============ 共享过滤状态 ============ */
 function getGradeFor(selId){
@@ -659,8 +692,9 @@ function ensureDraft(){
   if(!d) d=drafts[currentKid]={ grade:currentGrade, ym:null, exam:"期中", scores:{}, full:defFull(currentGrade), lines:defLines(currentGrade) };
   if(!SUBJECTS[d.grade]) d.grade=currentGrade;
   if(!d.full) d.full=defFull(d.grade);
-  // 分数线结构随年级重建（仅 7-9 年级有）
-  if(!d.lines || !d.lines[TOTAL_KEY] || Object.keys(d.lines).length!==SUBJECTS[d.grade].length+1){
+  // 分数线结构随年级重建（7-9 为 A+/A/B 三线逐科；高中五线仅总分）
+  var wantLines = d.grade>=10 ? 1 : SUBJECTS[d.grade].length+1;
+  if(!d.lines || !d.lines[TOTAL_KEY] || Object.keys(d.lines).length!==wantLines){
     d.lines=defLines(d.grade);
   }
   return d;
@@ -680,20 +714,28 @@ function bindLineInputs(root, d, getKey){
   root.querySelectorAll("input[data-line]").forEach(function(inp){
     inp.addEventListener("input",function(){
       var k=inp.dataset.line, subj=getKey();
-      var box=d.lines[subj]||(d.lines[subj]={aPlus:null,a:null,b:null});
+      var box=d.lines[subj]||(d.lines[subj]=blankLineBox(d.grade||currentGrade));
       var v=inp.value.trim();
       box[k] = v===""?null:Number(v);
       if(v!==""&&(isNaN(box[k])||box[k]<0)) box[k]=null;
       autoSaveDraft();
-      if(k==="aPlus"||k==="a") refreshLineBadges(root, d, getKey);
+      refreshLineBadges(root, d, getKey);
     });
   });
 }
 function refreshLineBadges(root, d, getKey){
+  var ks=lineKeys(d.grade||currentGrade);
   var subj=getKey(); var box=d.lines[subj]||{};
   root.querySelectorAll("input[data-line]").forEach(function(inp){
     var k=inp.dataset.line, v=box[k];
-    var warn = (k==="aPlus"&&v!=null&&box.a!=null&&v<box.a) || (k==="a"&&v!=null&&((box.aPlus!=null&&v>box.aPlus)||(box.b!=null&&v<box.b))) || (k==="b"&&v!=null&&box.a!=null&&v>box.a);
+    // 线值应沿档位递减（A+≥A≥B / 超一流≥双一流≥…），相邻两键出现倒挂即警示
+    var warn=false;
+    for(var i=0;i<ks.length-1;i++){
+      var vh = (ks[i]===k)?v:box[ks[i]];
+      var vl = (ks[i+1]===k)?v:box[ks[i+1]];
+      if(vh==null||vl==null) continue;
+      if(vh<vl){ warn=true; break; }
+    }
     inp.style.borderColor = warn?"var(--red)":"";
   });
 }
@@ -707,7 +749,8 @@ function renderSubjForm(){
   document.getElementById("examType").value = EXAM_TYPES.indexOf(d.exam)>=0?d.exam:"期中";
   var showLines = hasLines(g);
   var notice=document.getElementById("lineNotice");
-  if(showLines) notice.innerHTML='<div class="hint" style="margin:0 0 11px;padding:9px 11px;background:#f3f6ff;border:1px solid #dde6ff;border-radius:10px;color:#3b5bbf"><b>七/八/九年级</b>：每科可单独填写 <b style="color:#1f9d55">A+线</b>、<b style="color:#2f6bff">A线</b>、<b style="color:#b26a00">B线</b>（均可不填）；最下方还有<b>总分线</b>。</div>';
+  if(g>=10) notice.innerHTML='<div class="hint" style="margin:0 0 11px;padding:9px 11px;background:#f3f6ff;border:1px solid #dde6ff;border-radius:10px;color:#3b5bbf"><b>高一/高二/高三</b>：五条线<b>只按总分划线</b>，填写在最下方「总分」卡——<b style="color:#8b5cf6">超一流线</b>、<b style="color:#2f6bff">双一流线</b>、<b style="color:#e5484d">高优线</b>、<b style="color:#e08c00">一本线</b>、<b style="color:#0ea5e9">本科线</b>（均可不填），其中<b>总分高优线固定 600 分</b>，无需填写。</div>';
+  else if(showLines) notice.innerHTML='<div class="hint" style="margin:0 0 11px;padding:9px 11px;background:#f3f6ff;border:1px solid #dde6ff;border-radius:10px;color:#3b5bbf"><b>七/八/九年级</b>：每科可单独填写 <b style="color:#1f9d55">A+线</b>、<b style="color:#2f6bff">A线</b>、<b style="color:#b26a00">B线</b>（均可不填）；最下方还有<b>总分线</b>。</div>';
   else notice.innerHTML='';
   var box=document.getElementById("subjForm"); box.innerHTML="";
   document.getElementById("subjCount").textContent=GRADE_LABEL[g]+" · "+SUBJECTS[g].length+" 科";
@@ -722,11 +765,13 @@ function renderSubjForm(){
     var opts=[100,120,150,200,300];
     if(opts.indexOf(fv)<0) opts.push(fv);
     opts.sort(function(a,b){ return a-b; });
-    var lb=d.lines[s]||{aPlus:null,a:null,b:null};
+    var lb=d.lines[s]||{};
     var lineHtml="";
-    if(showLines){
+    // 高中五线只划总分，单科卡不出线
+    if(showLines && g<10){
+      var ks=lineKeys(g);
       lineHtml='<div class="linegrid">'+
-        LINE_KEYS.map(function(k){
+        ks.map(function(k){
           return '<div><label class="lf" style="color:'+LINE_COLOR[k]+'">'+esc(LINE_LABEL[k])+'</label>'+
             '<input type="number" inputmode="decimal" min="0" data-line="'+k+'" placeholder="—" value="'+(lb[k]==null?"":lb[k])+'"></div>';
         }).join("")+'</div>';
@@ -764,19 +809,25 @@ function renderSubjForm(){
       if(n<0){ inp.value=0; d.scores[s]=0; autoSaveDraft(); }
       else if(n>mx){ toast("分数不能超过满分 "+mx+"，已修正"); inp.value=mx; d.scores[s]=mx; autoSaveDraft(); }
     });
-    if(showLines) bindLineInputs(wrap, d, function(){ return s; });
+    if(showLines && g<10) bindLineInputs(wrap, d, function(){ return s; });
   });
   // 总分卡
   if(showLines){
     var fullSum=0; SUBJECTS[g].forEach(function(s){ fullSum+=(d.full[s]||100); });
-    var tl=d.lines[TOTAL_KEY]||{aPlus:null,a:null,b:null};
+    var tl=d.lines[TOTAL_KEY]||{};
+    var tks=lineKeys(g);
     var tcard=document.createElement("div");
     tcard.className="subjcard totalcard";
     tcard.innerHTML=
       '<div class="top"><div class="nm">总分 <span class="badge" style="background:#fff3e0;color:#b26a00">满 '+fullSum+'</span></div>'+
       '<div class="full" id="totalPreview">—</div></div>'+
       '<div class="linegrid">'+
-        LINE_KEYS.map(function(k){
+        tks.map(function(k){
+          // 高中总分高优线固定 600 分：只展示，不可填写
+          if(g>=10&&k==="gaoyou"){
+            return '<div><label class="lf" style="color:'+LINE_COLOR[k]+'">'+esc(LINE_LABEL[k])+'</label>'+
+              '<div class="fixline">'+GAOYOU_TOTAL+' 分（固定）</div></div>';
+          }
           return '<div><label class="lf" style="color:'+LINE_COLOR[k]+'">'+esc(LINE_LABEL[k])+'</label>'+
             '<input type="number" inputmode="decimal" min="0" data-total-line="'+k+'" placeholder="—" value="'+(tl[k]==null?"":tl[k])+'"></div>';
         }).join("")+'</div>';
@@ -784,7 +835,7 @@ function renderSubjForm(){
     tcard.querySelectorAll("input[data-total-line]").forEach(function(inp){
       inp.addEventListener("input",function(){
         var k=inp.dataset.totalLine;
-        var t=d.lines[TOTAL_KEY]||(d.lines[TOTAL_KEY]={aPlus:null,a:null,b:null});
+        var t=d.lines[TOTAL_KEY]||(d.lines[TOTAL_KEY]=blankLineBox(g));
         var v=inp.value.trim();
         t[k]=v===""?null:Number(v);
         if(v!==""&&(isNaN(t[k])||t[k]<0)) t[k]=null;
@@ -805,11 +856,15 @@ function syncTotalPreview(){
   SUBJECTS[g].forEach(function(s){ if(d.scores[s]!=null&&!isNaN(d.scores[s])){ tot+=d.scores[s]; any=true; } });
   if(!any){ el.textContent="—"; el.className="full"; return; }
   var t=(d.lines&&d.lines[TOTAL_KEY])||{};
-  var tagTxt="", tagColor="";
-  if(t.aPlus!=null&&tot>=t.aPlus){ tagTxt="已达 A+"; tagColor="#1f9d55"; }
-  else if(t.a!=null&&tot>=t.a){ tagTxt="已达 A"; tagColor="#2f6bff"; }
-  else if(t.b!=null&&tot>=t.b){ tagTxt="已达 B"; tagColor="#b26a00"; }
-  else if(t.aPlus!=null||t.a!=null||t.b!=null){ tagTxt="未达 B"; tagColor="var(--red)"; }
+  var tagTxt="", tagColor="", reached=null, lowest=null;
+  lineKeys(g).forEach(function(k){
+    var v=totalLineValue(t,g,k);
+    if(v==null) return;
+    if(lowest==null) lowest=k;              // 档位由高到低排列，最后一个有值的即最低线
+    if(reached==null&&tot>=v) reached=k;    // 首个达到的即最高达标线
+  });
+  if(reached){ tagTxt="已达 "+LINE_SHORT[reached]; tagColor=LINE_COLOR[reached]; }
+  else if(lowest){ tagTxt="未达 "+LINE_SHORT[lowest]; tagColor="var(--red)"; }
   el.className="full";
   el.innerHTML='<b style="font-size:16px;color:var(--txt)">'+tot+'</b>'+
     (tagTxt?' <span class="badge" style="background:'+tagColor+'1a;color:'+tagColor+'">'+tagTxt+'</span>':"");
@@ -837,11 +892,16 @@ function saveRecord(){
   // 分数线校验（逐科 + 总分）
   if(hasLines(currentGrade)){
     var bad=null;
+    var vks=lineKeys(currentGrade);
     var checkTargets=SUBJECTS[currentGrade].concat([TOTAL_KEY]);
     checkTargets.forEach(function(s){
       var o=(d.lines||{})[s]; if(!o||bad) return;
-      if(o.aPlus!=null&&o.a!=null&&o.aPlus<o.a) bad=(s===TOTAL_KEY?"总分":s)+"：A+线不应低于 A线";
-      else if(o.a!=null&&o.b!=null&&o.a<o.b) bad=(s===TOTAL_KEY?"总分":s)+"：A线不应低于 B线";
+      for(var vi=0;vi<vks.length-1;vi++){
+        var hi=vks[vi], lo=vks[vi+1];
+        var vh=(s===TOTAL_KEY)?totalLineValue(o,currentGrade,hi):o[hi];
+        var vl=(s===TOTAL_KEY)?totalLineValue(o,currentGrade,lo):o[lo];
+        if(vh!=null&&vl!=null&&vh<vl){ bad=(s===TOTAL_KEY?"总分":s)+"："+LINE_LABEL[hi]+"不应低于 "+LINE_LABEL[lo]; return; }
+      }
     });
     if(bad){ confirmBox("分数线顺序有误", esc(bad)+"，是否仍要继续保存？","仍然保存",false,doSave); return; }
   }
@@ -891,40 +951,54 @@ function renderRecords(){
   mine.forEach(function(r){
     var el=document.createElement("div"); el.className="entry";
     var L=r.lines||{};
+    var ks=hasLines(r.grade)?lineKeys(r.grade):[];
     var parts=SUBJECTS[r.grade].map(function(s){
       var v=r.scores[s];
       var mark="";
       var lb=L[s]||{};
       if(v!=null){
-        if(lb.aPlus!=null&&v>=lb.aPlus) mark='<span class="badge" style="background:#e8f5ec;color:#1f9d55;margin-left:2px">A+</span>';
-        else if(lb.a!=null&&v>=lb.a) mark='<span class="badge" style="background:#eaf1ff;color:#2f6bff;margin-left:2px">A</span>';
-        else if(lb.b!=null&&v>=lb.b) mark='<span class="badge" style="background:#fff3e0;color:#b26a00;margin-left:2px">B</span>';
+        for(var mi=0;mi<ks.length;mi++){
+          var mk=ks[mi];
+          if(lb[mk]!=null&&v>=lb[mk]){
+            mark='<span class="badge" style="background:'+LINE_BADGE_BG[mk]+';color:'+LINE_COLOR[mk]+';margin-left:2px">'+esc(LINE_SHORT[mk])+'</span>';
+            break;
+          }
+        }
       }
       return '<span style="display:inline-block;margin-right:11px">'+esc(s)+' <b style="color:'+(v==null?"var(--sub)":"var(--txt)")+'">'+(v==null?"—":v)+'</b>'+mark+'</span>';
     }).join("");
-    var tot=sumScore(r), tf=sumFull(r);
+    var tot=sumScore(r), tf=sumFull(r), quiz=isQuiz(r);
+    // 随堂小测可能非全科：分母改用「已考科目满分」，并标注非全科
+    var tfShow = quiz ? sumFullScored(r) : tf;
+    var quizTag = quiz ? '<small style="color:var(--sub);font-weight:400;font-size:10px;margin-left:5px">非全科</small>' : '';
     // 各科分数线明细
     var detail="";
     if(hasLines(r.grade)){
       var rows=[];
-      SUBJECTS[r.grade].forEach(function(s){
+      // 高中五线只划总分，不展示逐科线
+      if(r.grade<10) SUBJECTS[r.grade].forEach(function(s){
         var o=L[s]; if(!o) return;
-        if(o.aPlus==null&&o.a==null&&o.b==null) return;
-        rows.push('<span style="display:inline-block;margin-right:12px;color:var(--sub)">'+esc(s)+'：'+
-          (o.aPlus!=null?'<b style="color:#1f9d55">A+'+o.aPlus+'</b> ':'')+
-          (o.a!=null?'<b style="color:#2f6bff">A'+o.a+'</b> ':'')+
-          (o.b!=null?'<b style="color:#b26a00">B'+o.b+'</b>':'')+'</span>');
+        var seg="";
+        ks.forEach(function(k){ if(o[k]!=null) seg+=(seg?" ":"")+'<b style="color:'+LINE_COLOR[k]+'">'+esc(LINE_SHORT[k])+o[k]+'</b>'; });
+        if(!seg) return;
+        rows.push('<span style="display:inline-block;margin-right:12px;color:var(--sub)">'+esc(s)+'：'+seg+'</span>');
       });
       var t=L[TOTAL_KEY];
-      if(t&&(t.aPlus!=null||t.a!=null||t.b!=null)){
+      var tSeg="";
+      ks.forEach(function(k){
+        var v=totalLineValue(t,r.grade,k);
+        if(v==null) return;
+        tSeg+=(tSeg?" ":"")+'<b style="color:'+LINE_COLOR[k]+'">'+esc(LINE_SHORT[k])+v+'</b>';
+      });
+      if(tSeg){
         var totMark="";
         if(tot!=null){
-          if(t.aPlus!=null&&tot>=t.aPlus) totMark='<span class="badge" style="background:#e8f5ec;color:#1f9d55">达A+</span>';
-          else if(t.a!=null&&tot>=t.a) totMark='<span class="badge" style="background:#eaf1ff;color:#2f6bff">达A</span>';
-          else if(t.b!=null&&tot>=t.b) totMark='<span class="badge" style="background:#fff3e0;color:#b26a00">达B</span>';
+          for(var ti=0;ti<ks.length;ti++){
+            var tv=totalLineValue(t,r.grade,ks[ti]);
+            if(tv!=null&&tot>=tv){ totMark='<span class="badge" style="background:'+LINE_BADGE_BG[ks[ti]]+';color:'+LINE_COLOR[ks[ti]]+'">达'+esc(LINE_SHORT[ks[ti]])+'</span>'; break; }
+          }
         }
-        rows.push('<span style="display:inline-block;color:#b26a00;font-weight:600">总分线：'+
-          (t.aPlus!=null?'A+'+t.aPlus+' ':'')+(t.a!=null?'A'+t.a+' ':'')+(t.b!=null?'B'+t.b:'')+'</span>'+totMark);
+        rows.push('<span style="display:inline-block;color:#b26a00;font-weight:600">总分线：'+tSeg+'</span>'+totMark);
       }
       if(rows.length) detail='<div class="s" style="margin-top:4px;line-height:1.85;font-size:11.5px;padding-top:4px;border-top:1px dashed var(--line2)">'+rows.join("")+'</div>';
     }
@@ -932,9 +1006,9 @@ function renderRecords(){
       '<div class="sp"><div class="t">'+ymLabel(r.ym)+' <span class="badge exam">'+esc(r.exam)+'</span>'+
         '<span class="badge">'+GRADE_LABEL[r.grade]+'</span></div>'+
       '<div class="s" style="line-height:1.9">'+parts+'</div>'+detail+
-      (tot!=null?'<div class="bar"><i style="width:'+Math.min(100,Math.round(tot/tf*100))+'%"></i></div>':'')+
+      (tot!=null?'<div class="bar"><i style="width:'+Math.min(100,Math.round(tot/tfShow*100))+'%"></i></div>':'')+
       '</div>'+
-      '<div style="text-align:right"><div class="num">'+(tot==null?"—":tot)+'<small style="color:var(--sub);font-weight:400">/'+tf+'</small></div>'+
+      '<div style="text-align:right"><div class="num">'+(tot==null?"—":tot)+'<small style="color:var(--sub);font-weight:400">/'+tfShow+'</small>'+quizTag+'</div>'+
       '<div style="margin-top:6px;display:flex;gap:5px;justify-content:flex-end">'+
       '<button class="icon" data-e="'+r.id+'">✎</button><button class="icon del" data-d="'+r.id+'">✕</button></div></div>';
     box.appendChild(el);
@@ -966,7 +1040,7 @@ function loadLastRecord(){
   var examNow=document.getElementById("examType").value||d.exam||"期中";
   var sameAsTarget = (last.ym===ymNow && last.exam===examNow);
   var msg="将把最近一次登记 <b>"+ymLabel(last.ym)+" "+esc(last.exam)+"</b>（"+GRADE_LABEL[last.grade]+"）的内容带入当前录入：<br>"+
-    "· 满分设置与各科分数线<br>· 各科分数<br>"+
+    "· 满分设置与分数线<br>· 各科分数<br>"+
     "当前登记的批次仍为 <b>"+ymLabel(ymNow)+" "+esc(examNow)+"</b>（年月与考试类型不会改变）";
   if(sameAsTarget) msg+="<br><span style='color:var(--red)'>注意：最近一次登记与当前选择的批次相同，保存时会覆盖它。</span>";
   confirmBox("带入上次登记", msg, "确认带入", false, function(){
@@ -1005,7 +1079,8 @@ function drawChart(box, series, opts){
   opts=opts||{};
   var W=680,H=opts.h||320,PL=48,PR=opts.rightAxis?52:20,PT=18,PB=44;
   box.innerHTML="";
-  if(!series.length || !series[0] || !series[0].pts.length){
+  function hasAnyVal(){ return series.some(function(s){ return s.pts.some(function(p){ return p.y!=null && !isNaN(p.y); }); }); }
+  if(!series.length || !series[0] || !series[0].pts.length || !hasAnyVal()){
     box.innerHTML='<div class="empty">暂无数据，请先在「成绩登记」录入</div>';
     box.style.height="auto";
     return;
@@ -1016,8 +1091,10 @@ function drawChart(box, series, opts){
   var iw=W-PL-PR, ih=H-PT-PB;
 
   var useRight=!!opts.rightAxis;
+  // 只取有效数值参与刻度计算；null 表示该批次不参与（如随堂小测不计入总分），图上留空断线
+  function numVals(s){ return s.pts.map(function(p){return p.y;}).filter(function(v){ return v!=null && !isNaN(v); }); }
   var leftVals=[], rightVals=[];
-  series.forEach(function(s){ (s.axis==="right"?rightVals:leftVals).push.apply(s.axis==="right"?rightVals:leftVals, s.pts.map(function(p){return p.y;})); });
+  series.forEach(function(s){ (s.axis==="right"?rightVals:leftVals).push.apply(s.axis==="right"?rightVals:leftVals, numVals(s)); });
 
   function scale(vals, forceZero){
     if(!vals.length) return {min:0,max:100,ticks:[]};
@@ -1025,11 +1102,24 @@ function drawChart(box, series, opts){
     if(forceZero){ mn=Math.min(0,mn); }
     if(mx-mn<1e-9){ mx=mn+ (mn>=50?10:10); mn=Math.max(0,mn-10); }
     var pad=(mx-mn)*0.16; var lo=forceZero?0:Math.max(0,mn-pad), hi=mx+pad;
-    if(opts.percent){ hi=Math.min(1.06,hi); lo=Math.max(0,lo); }
-    var steps=4, raw=(hi-lo)/steps, mag=Math.pow(10,Math.floor(Math.log10(raw)));
+    // 百分制（得分率）时取值已是 0-100 的百分数，上限收到 100
+    if(opts.percent){ hi=Math.min(100,hi); lo=Math.max(0,lo); }
+    return niceTicks(lo,hi,opts.percent);
+  }
+  // 生成「好看」的刻度：步长取 1/2/2.5/5/10 的整数次幂；百分制下步长至少为 1（整数百分点），
+  // 并去掉四舍五入后标签重复的刻度（如 98.5 与 99.0 都显示成 99%）
+  function niceTicks(lo,hi,percent){
+    var steps=4, raw=(hi-lo)/steps, mag=Math.pow(10,Math.floor(Math.log10(raw||1)||0));
     var norm=[1,2,2.5,5,10].map(function(m){return m*mag;}).filter(function(x){return x>=raw;})[0]||raw;
+    if(percent && norm<1) norm=1;
     var start=Math.floor(lo/norm)*norm, end=Math.ceil(hi/norm)*norm;
-    var ticks=[]; for(var v=start;v<=end+1e-9;v+=norm) ticks.push(Math.round(v*1000)/1000);
+    var ticks=[], lastLab=null;
+    for(var v=start;v<=end+1e-9;v+=norm){
+      var lab=Math.round(v*1000)/1000;
+      var shown=percent?Math.round(lab):Math.round(lab);
+      if(shown===lastLab) continue;
+      lastLab=shown; ticks.push(lab);
+    }
     return {min:start,max:end,ticks:ticks};
   }
   var LS=scale(leftVals, opts.forceZeroLeft);
@@ -1041,12 +1131,9 @@ function drawChart(box, series, opts){
     refsOrg.forEach(function(x){ lo=Math.min(lo,x.value); hi=Math.max(hi,x.value); });
     var pad=(hi-lo)*0.08||1;
     LS.min=Math.max(0,lo-pad); LS.max=hi+pad;
-    if(opts.percent) LS.max=Math.min(1.06,LS.max);
-    var steps2=4, raw2=(LS.max-LS.min)/steps2, mag2=Math.pow(10,Math.floor(Math.log10(raw2)||0));
-    var norm2=[1,2,2.5,5,10].map(function(m){return m*mag2;}).filter(function(x){return x>=raw2;})[0]||raw2;
-    var st2=Math.floor(LS.min/norm2)*norm2, en2=Math.ceil(LS.max/norm2)*norm2;
-    LS.ticks=[]; for(var v2=st2;v2<=en2+1e-9;v2+=norm2) LS.ticks.push(Math.round(v2*1000)/1000);
-    LS.min=st2; LS.max=en2;
+    if(opts.percent) LS.max=Math.min(100,LS.max);
+    var nt=niceTicks(LS.min,LS.max,opts.percent);
+    LS.min=nt.min; LS.max=nt.max; LS.ticks=nt.ticks;
   }
   function px(i){ return n===1 ? PL+iw/2 : PL + iw*(i/(n-1)); }
   function ly(v){ return PT + ih*(1-(v-LS.min)/((LS.max-LS.min)||1)); }
@@ -1058,7 +1145,7 @@ function drawChart(box, series, opts){
   LS.ticks.forEach(function(t){
     var y=ly(t);
     s+='<line x1="'+PL+'" y1="'+y+'" x2="'+(W-PR)+'" y2="'+y+'" stroke="#eef1f6" stroke-width="1"/>';
-    s+='<text x="'+(PL-8)+'" y="'+(y+4)+'" text-anchor="end" font-size="11" fill="#8894a8">'+(opts.percent?Math.round(t*100)+"%":Math.round(t))+'</text>';
+    s+='<text x="'+(PL-8)+'" y="'+(y+4)+'" text-anchor="end" font-size="11" fill="#8894a8">'+(opts.percent?Math.round(t)+"%":Math.round(t))+'</text>';
   });
   if(useRight) RS.ticks.forEach(function(t){
     var y=ry(t);
@@ -1096,29 +1183,58 @@ function drawChart(box, series, opts){
       s+='<text x="'+(W-PR-4)+'" y="'+(y+13)+'" text-anchor="end" font-size="10.5" font-weight="700" fill="'+x.color+'">'+esc(x.name)+'</text>';
     });
   }
-  // area for first left series
+  // 把一条 series 切成「连续有效点」的若干段：null 处断开，折线不跨过未统计的批次
+  function segsOf(se){
+    var yf=se.axis==="right"?ry:ly;
+    var segs=[], cur=[];
+    se.pts.forEach(function(p,i){
+      if(p.y==null||isNaN(p.y)){ if(cur.length) segs.push(cur); cur=[]; }
+      else cur.push({x:px(i), y:yf(p.y)});
+    });
+    if(cur.length) segs.push(cur);
+    return segs;
+  }
+  // area for first left series（分段绘制，null 处不填充）
   var first=series.filter(function(x){return x.axis!=="right";})[0];
-  if(first && first.pts.length>1){
-    var pts=first.pts.map(function(p,i){ return px(i)+","+ly(p.y); }).join(" ");
-    s+='<polygon points="'+px(0)+','+(PT+ih)+' '+pts+' '+px(first.pts.length-1)+','+(PT+ih)+'" fill="url(#gA)"/>';
+  if(first){
+    segsOf(first).forEach(function(seg){
+      if(seg.length<2) return;
+      s+='<polygon points="'+seg[0].x+','+(PT+ih)+' '+seg.map(function(q){ return q.x+","+q.y; }).join(" ")+' '+seg[seg.length-1].x+','+(PT+ih)+'" fill="url(#gA)"/>';
+    });
   }
   // lines
+  var showLabels=!!opts.showLabels;
   series.forEach(function(se){
-    var yf = se.axis==="right"?ry:ly;
-    var pts=se.pts.map(function(p,i){ return px(i)+","+yf(p.y); }).join(" ");
-    if(se.pts.length>1) s+='<polyline points="'+pts+'" fill="none" stroke="'+se.color+'" stroke-width="'+(se.dash?2:2.4)+'" stroke-linejoin="round" stroke-linecap="round"'+(se.dash?' stroke-dasharray="6 4"':"")+'/>';
+    var dashAttr=se.dash?' stroke-dasharray="6 4"':"";
+    var sw=se.dash?2:2.4;
+    segsOf(se).forEach(function(seg){
+      if(seg.length<2) return;
+      s+='<polyline points="'+seg.map(function(q){ return q.x+","+q.y; }).join(" ")+'" fill="none" stroke="'+se.color+'" stroke-width="'+sw+'" stroke-linejoin="round" stroke-linecap="round"'+dashAttr+'/>';
+    });
     se.pts.forEach(function(p,i){
-      var cy=yf(p.y);
+      if(p.y==null||isNaN(p.y)) return;   // 未参加 / 不计入的批次：不画点、不画标签
+      var cy=(se.axis==="right"?ry:ly)(p.y);
       s+='<circle cx="'+px(i)+'" cy="'+cy+'" r="3.4" fill="#fff" stroke="'+se.color+'" stroke-width="2.2"><title>'+esc(se.name+" · "+p.x+" · "+(se.axis==="right"?p.y:Math.round(p.y*100)/100))+'</title></circle>';
-      if(se.showVal) s+='<text x="'+px(i)+'" y="'+(cy-9)+'" text-anchor="middle" font-size="10" fill="'+se.color+'" font-weight="600">'+p.y+'</text>';
+      if(showLabels){
+        // 数据点较多时上下错层，避免文字互相压盖；贴近上边界时改到点下方
+        var yy=cy-9;
+        if(n>7 && i%2===1) yy=cy-21;
+        if(yy<PT+6) yy=cy+16;
+        s+='<text x="'+px(i)+'" y="'+yy+'" text-anchor="middle" font-size="10" font-weight="700" fill="'+se.color+'">'+esc(fmtPt(p.y,opts.percent))+'</text>';
+      }
     });
   });
   s+='</svg>';
   box.innerHTML=s;
 }
+// 数据标签格式化：得分率模式加 %，分数模式最多保留 1 位小数
+function fmtPt(v,pct){
+  var r=Math.round(v*10)/10;
+  return pct? (r+"%") : String(r);
+}
 
 /* ============ Tab 2: 成绩看板 ============ */
-var bSubjSel={}, bShowTotal=true, bShowLines=true;
+var bSubjSel={}, bShowTotal=true, bShowLines=true, bShowLabels=true;
 function refreshBoardSelects(){
   var bg=document.getElementById("bGrade"), rg=document.getElementById("rGrade");
   if(!bg.value) buildGradeSelect(bg,false); else buildGradeSelect(bg,true);
@@ -1145,6 +1261,17 @@ function boardRecords(){
   var arr=state.records.filter(function(r){ return r.grade===g && (!kidFilter||r.kidId===kidFilter); });
   if(!arr.length) arr=state.records.filter(function(r){ return r.grade===g; });
   return arr;
+}
+function labelOf(r){ return r.ym.slice(2).replace("-","/")+" "+r.exam; }
+// 按「年月+考试类型」分组；同一孩子同一批次只保留一条，避免多孩子合并时重复
+function buildLabelGroups(recs){
+  var byLabel={};
+  recs.forEach(function(r){
+    var lb=labelOf(r);
+    if(!byLabel[lb]) byLabel[lb]=[];
+    if(!byLabel[lb].some(function(x){return x.kidId===r.kidId;})) byLabel[lb].push(r);
+  });
+  return byLabel;
 }
 function renderBoard(){
   var g=getGradeFor("bGrade"); if(!g) return;
@@ -1185,55 +1312,62 @@ function renderBoard(){
   }
   // 找出每个科目最新的非空线（每科单独取，互不影响）
   var latest={};
+  var lks=lineKeys(g);
   if(bShowLines && hasLines(g)){
     labels.forEach(function(lb){
       byLabel[lb].forEach(function(r){
         var L=r.lines||{};
-        SUBJECTS[r.grade].forEach(function(s){
+        // 高中五线只划总分，不收集逐科线
+        if(g<10) SUBJECTS[r.grade].forEach(function(s){
           var o=L[s]; if(!o) return;
           if(!latest[s]) latest[s]={};
-          LINE_KEYS.forEach(function(k){ if(o[k]!=null) latest[s][k]=o[k]; });
+          lks.forEach(function(k){ if(o[k]!=null) latest[s][k]=o[k]; });
         });
         var t=L[TOTAL_KEY];
-        if(t){ latest[TOTAL_KEY]=latest[TOTAL_KEY]||{}; LINE_KEYS.forEach(function(k){ if(t[k]!=null) latest[TOTAL_KEY][k]=t[k]; }); }
+        if(t){ latest[TOTAL_KEY]=latest[TOTAL_KEY]||{}; lks.forEach(function(k){ if(t[k]!=null) latest[TOTAL_KEY][k]=t[k]; }); }
       });
     });
   }
   function refsOf(key){
-    if(!latest[key]) return [];
+    var box=latest[key]||{};
     var out=[];
-    LINE_KEYS.forEach(function(k){
-      if(latest[key][k]!=null) out.push({name:LINE_LABEL[k], value:latest[key][k], color:LINE_COLOR[k]});
+    lks.forEach(function(k){
+      // 总分高优线固定 600：未登记也在总分图上显示
+      var v=(key===TOTAL_KEY)?totalLineValue(box,g,k):box[k];
+      if(v!=null) out.push({name:LINE_LABEL[k], value:v, color:LINE_COLOR[k]});
     });
     return out;
   }
-  // 取某科目在各次考试中的平均分
+  // 取某科目在各次考试中的平均分（该次未考该科则留空，图上断线）
   function avgOf(list, key){
     var arr=list.filter(function(r){ return r.scores[key]!=null; });
     if(!arr.length) return null;
     return Math.round(arr.reduce(function(a,b){ return a+b.scores[key]; },0)/arr.length*10)/10;
   }
+  // 总分：随堂小测可能非全科考试，总分不可比，一律不计入（留空断线）
   function avgTotal(list){
     var tot=0,cnt=0;
-    list.forEach(function(r){ var v=sumScore(r); if(v!=null){ tot+=v; cnt++; } });
+    list.forEach(function(r){ if(isQuiz(r)) return; var v=sumScore(r); if(v!=null){ tot+=v; cnt++; } });
     return cnt?Math.round(tot/cnt):null;
   }
-  // 总分的满分随记录走，取该年级记录里出现过的满分合计
+  // 总分的满分随记录走，取非随堂小测记录里出现过的满分合计
   var totalFull=0;
-  recs.forEach(function(r){ var f=sumFull(r); if(f>totalFull) totalFull=f; });
+  recs.forEach(function(r){ if(isQuiz(r)) return; var f=sumFull(r); if(f>totalFull) totalFull=f; });
   if(!totalFull) totalFull=SUBJECTS[g].length*100;
+  var quizCount=recs.filter(isQuiz).length;
   // 组装图表列表：总分固定放第一个，其后为各勾选科目
+  // 每张图都取全部批次为横轴，无数据的批次留 null（断线），保证各图横轴对齐
   var chartList=[];
   if(bShowTotal){
     var tp=[];
-    labels.forEach(function(lb){ var v=avgTotal(byLabel[lb]); if(v!=null) tp.push({x:lb,y:v}); });
-    if(tp.length) chartList.push({key:TOTAL_KEY,name:"总分",color:"#e08c00",pts:tp,refs:refsOf(TOTAL_KEY),sm:"满分 "+totalFull});
+    labels.forEach(function(lb){ tp.push({x:lb, y:avgTotal(byLabel[lb])}); });
+    if(tp.some(function(p){return p.y!=null;})) chartList.push({key:TOTAL_KEY,name:"总分",color:"#e08c00",pts:tp,refs:refsOf(TOTAL_KEY),sm:"满分 "+totalFull});
   }
   SUBJECTS[g].forEach(function(s){
     if(!bSubjSel[s]) return;
     var sp=[];
-    labels.forEach(function(lb){ var v=avgOf(byLabel[lb],s); if(v!=null) sp.push({x:lb,y:v}); });
-    if(sp.length) chartList.push({key:s,name:s,color:colorOf(s),pts:sp,refs:refsOf(s)});
+    labels.forEach(function(lb){ sp.push({x:lb, y:avgOf(byLabel[lb],s)}); });
+    if(sp.some(function(p){return p.y!=null;})) chartList.push({key:s,name:s,color:colorOf(s),pts:sp,refs:refsOf(s)});
   });
 
   var wrap=document.getElementById("bCharts"); wrap.innerHTML="";
@@ -1243,7 +1377,7 @@ function renderBoard(){
     return;
   }
   chartList.forEach(function(c){
-    var vals=c.pts.map(function(p){ return p.y; });
+    var vals=c.pts.map(function(p){ return p.y; }).filter(function(v){ return v!=null; });
     var card=document.createElement("div"); card.className="chartcard";
     card.innerHTML='<div class="ch-hd"><span class="dot" style="background:'+c.color+'"></span>'+
       '<span class="tt" style="color:'+c.color+'">'+esc(c.name)+'</span>'+
@@ -1251,23 +1385,28 @@ function renderBoard(){
     var box=document.createElement("div"); box.className="chartbox"; box.style.height="250px";
     card.appendChild(box);
     wrap.appendChild(card);
-    drawChart(box,[{name:c.name,color:c.color,axis:"left",pts:c.pts,showVal:false}],{h:250,refLines:c.refs});
+    drawChart(box,[{name:c.name,color:c.color,axis:"left",pts:c.pts}],{h:250,refLines:c.refs,showLabels:bShowLabels});
   });
 
   var kidName = "";
   if(state.kids.length>1 && !pts.some(function(r){return r.kidId===currentKid;})) kidName="（当前孩子该年级无数据，已合并显示全部孩子）";
   var lineNote="";
   if(hasLines(g) && bShowLines){
-    if(latest[TOTAL_KEY]||SUBJECTS[g].some(function(s){ return latest[s]; })) lineNote="｜虚线为该科 A+/A/B 分数线";
+    if(latest[TOTAL_KEY]||(g<10&&SUBJECTS[g].some(function(s){ return latest[s]; }))){
+      lineNote = g>=10
+        ? "｜虚线为总分五线（"+lks.map(function(k){return LINE_LABEL[k];}).join("、")+"），高优线固定 600 分"
+        : "｜虚线为该科/总分分数线（"+lks.map(function(k){return LINE_LABEL[k];}).join("、")+"）";
+    }
     else lineNote="｜提示：登记时填写分数线后此处显示参考虚线";
   }else if(bShowLines && !hasLines(g)){
-    lineNote="｜分数线仅七/八/九年级适用";
+    lineNote="｜小学阶段不设分数线";
   }
-  document.getElementById("bHint").innerHTML="共 "+chartList.length+" 张图：总分 + 勾选科目各自独立成图，纵轴自动缩放"+lineNote+kidName;
+  var quizNote = (quizCount && bShowTotal) ? "｜总分图已跳过 "+quizCount+" 次随堂小测（可能非全科考试，总分不可比；断线处即为该次）" : "";
+  document.getElementById("bHint").innerHTML="共 "+chartList.length+" 张图：总分 + 勾选科目各自独立成图，纵轴自动缩放"+lineNote+quizNote+kidName;
 }
 
 /* ============ Tab 3: 得分率看板 ============ */
-var rSubjSel={};
+var rSubjSel={}, rShowTotal=true, rShowLabels=true;
 function renderRateSubjChips(){
   var g=getGradeFor("rGrade")||1;
   var box=document.getElementById("rSubj"); box.innerHTML="";
@@ -1289,20 +1428,18 @@ function rateRecords(){
 function renderRate(){
   var g=getGradeFor("rGrade"); if(!g) return;
   var recs=rateRecords();
-  var byLabel={};
-  recs.forEach(function(r){
-    var lb=r.ym.slice(2).replace("-","/")+" "+r.exam;
-    if(!byLabel[lb]) byLabel[lb]=[];
-    byLabel[lb].push(r);
-  });
+  var byLabel=buildLabelGroups(recs);
   var labels=Object.keys(byLabel).sort();
   var allRates=[], allSubj={};
   recs.forEach(function(r){
-    var rv=rateVal(r); if(rv!=null) allRates.push(rv);
+    // KPI 走「总分得分率」口径：随堂小测可能非全科考试，不计入
+    if(!isQuiz(r)){ var rv=rateVal(r); if(rv!=null) allRates.push(rv); }
+    // 各科得分率汇总与单科图走单科口径：随堂小测照常参与
     SUBJECTS[r.grade].forEach(function(s){
       if(r.scores[s]!=null){ var v=r.scores[s]/(r.full[s]||100); allSubj[s]=allSubj[s]||[]; allSubj[s].push(v); }
     });
   });
+  var quizCount=recs.filter(isQuiz).length;
   // KPI
   var kp=document.getElementById("rKpi");
   if(allRates.length){
@@ -1315,20 +1452,22 @@ function renderRate(){
       '<div class="b"><div class="k">最低得分率</div><div class="v" style="color:var(--red)">'+(worst*100).toFixed(1)+'%</div></div>';
   }else kp.innerHTML='<div class="b" style="grid-column:1/-1"><div class="k">暂无数据</div><div class="v">—</div></div>';
 
-  // 分数线达标统计（仅 7-9 年级）
+  // 分数线达标统计（7-9 年级逐科 A+/A/B；高中仅总分五线，高优固定 600）
   var lbox=document.getElementById("rLineBox");
   var ltitle=document.getElementById("rLineSub");
   if(!hasLines(g)){
-    ltitle.textContent="仅七/八/九年级";
-    lbox.innerHTML='<div class="empty">A+/A/B 线只适用于七、八、九年级。请在「成绩看板」或登记页切换到七/八/九年级查看。</div>';
+    ltitle.textContent="小学阶段不适用";
+    lbox.innerHTML='<div class="empty">分数线：七至九年级逐科 A+/A/B；高中年级仅按总分五线（超一流/双一流/高优600/一本/本科）。请切换到初中或高中年级查看。</div>';
   }else{
     var lineRecs=recs.filter(linesFilled);
-    ltitle.textContent=lineRecs.length?("覆盖 "+lineRecs.length+" 次登记"):"暂无填写分数线";
+    ltitle.textContent=lineRecs.length?("覆盖 "+lineRecs.length+" 次登记"+(g>=10?" · 总分高优线固定 600 分":"")):"暂无填写分数线";
     if(!lineRecs.length){
-      lbox.innerHTML='<div class="empty">还没有记录填写分数线。在「成绩登记」里逐科填写 A+/A/B 线后，这里会统计各科达标情况。</div>';
+      lbox.innerHTML='<div class="empty">还没有记录填写分数线。在「成绩登记」里'+(g>=10?"在总分卡填写五条线":"逐科填写 A+/A/B 线")+'后，这里会统计达标情况。</div>';
     }else{
       var html='';
-      LINE_KEYS.forEach(function(k){
+      var ks=lineKeys(g);
+      // 高中五线只划总分，无逐科达标统计
+      if(g<10) ks.forEach(function(k){
         var hit=0, total=0, bySubj={};
         lineRecs.forEach(function(r){
           SUBJECTS[r.grade].forEach(function(s){
@@ -1355,14 +1494,17 @@ function renderRate(){
           '<div class="subj-sum">'+subjHtml+'</div>'+
           '<div class="hint" style="margin-top:0">共 '+hit+'/'+total+' 科次达到 '+esc(LINE_LABEL[k])+'</div></div>';
       });
-      // 总分线达标
+      // 总分线达标（随堂小测非全科考试，不计入总分口径）
       var tRows="";
-      LINE_KEYS.forEach(function(k){
+      ks.forEach(function(k){
         var h=0,n=0;
         lineRecs.forEach(function(r){
-          var t=(r.lines||{})[TOTAL_KEY]; if(!t||t[k]==null) return;
+          if(isQuiz(r)) return;
+          var t=(r.lines||{})[TOTAL_KEY];
+          var lv=totalLineValue(t,r.grade,k);
+          if(lv==null) return;
           var tot=sumScore(r); if(tot==null) return;
-          n++; if(tot>=t[k]) h++;
+          n++; if(tot>=lv) h++;
         });
         if(!n) return;
         var p=n?h/n*100:0;
@@ -1374,7 +1516,8 @@ function renderRate(){
       });
       if(tRows){
         html+='<div style="margin-top:4px;padding-top:11px;border-top:1px solid var(--line2)">'+
-          '<div class="sec-t">总分线达标</div>'+tRows+'</div>';
+          '<div class="sec-t">总分线达标</div>'+tRows+
+          (quizCount?'<div class="hint" style="margin:0">已跳过 '+quizCount+' 次随堂小测（非全科考试，总分不可比）</div>':'')+'</div>';
       }
       lbox.innerHTML = html || '<div class="empty">暂无有效分数线数据</div>';
     }
@@ -1394,27 +1537,57 @@ function renderRate(){
     sum.appendChild(it);
   });
 
-  // chart
-  var series=[];
+  // chart：总分单独一张放第一，其后各勾选科目单独成图（与成绩看板一致）
+  var wrap=document.getElementById("rCharts"); wrap.innerHTML="";
+  var rateHint="单位：% 。得分率 = 该科得分 ÷ 该科满分，<b>不受满分调整影响，可直接横向比较</b>。";
+  if(!labels.length){
+    wrap.innerHTML='<div class="empty">暂无数据，请先在「成绩登记」录入</div>';
+    document.getElementById("rHint").innerHTML=rateHint;
+    return;
+  }
+  // 某科目在各次考试中的平均得分率（%）
+  function avgRateOf(list,key){
+    var arr=list.filter(function(r){ return r.scores[key]!=null; });
+    if(!arr.length) return null;
+    var v=arr.reduce(function(a,b){ return a+b.scores[key]/(b.full[key]||100); },0)/arr.length;
+    return Math.round(v*1000)/10;
+  }
+  // 总分得分率：随堂小测可能非全科考试，不计入（留空断线）
+  function avgTotalRate(list){
+    var tot=0,cnt=0;
+    list.forEach(function(r){ if(isQuiz(r)) return; var v=rateVal(r); if(v!=null){ tot+=v; cnt++; } });
+    return cnt?Math.round(tot/cnt*1000)/10:null;
+  }
+  var chartList=[];
+  if(rShowTotal){
+    var tp=[];
+    labels.forEach(function(lb){ tp.push({x:lb, y:avgTotalRate(byLabel[lb])}); });
+    if(tp.some(function(p){return p.y!=null;})) chartList.push({key:TOTAL_KEY,name:"总分",color:"#e08c00",pts:tp});
+  }
   SUBJECTS[g].forEach(function(s){
     if(!rSubjSel[s]) return;
-    var p=[];
-    labels.forEach(function(lb){
-      var rs=byLabel[lb].filter(function(r){ return r.scores[s]!=null; });
-      if(!rs.length) return;
-      var v=rs.reduce(function(a,b){ return a+b.scores[s]/(b.full[s]||100); },0)/rs.length;
-      p.push({x:lb,y:Math.round(v*1000)/10});
-    });
-    if(p.length) series.push({name:s,color:colorOf(s),axis:"left",pts:p});
+    var sp=[];
+    labels.forEach(function(lb){ sp.push({x:lb, y:avgRateOf(byLabel[lb],s)}); });
+    if(sp.some(function(p){return p.y!=null;})) chartList.push({key:s,name:s,color:colorOf(s),pts:sp});
   });
-  var lg=document.getElementById("rLegend"); lg.innerHTML="";
-  series.forEach(function(se){
-    var d=document.createElement("div");
-    d.innerHTML='<span style="background:'+se.color+'"></span>'+esc(se.name)+' 得分率%';
-    lg.appendChild(d);
+  if(!chartList.length){
+    wrap.innerHTML='<div class="empty">请先在上方勾选科目</div>';
+    document.getElementById("rHint").innerHTML=rateHint;
+    return;
+  }
+  chartList.forEach(function(c){
+    var vals=c.pts.map(function(p){ return p.y; }).filter(function(v){ return v!=null; });
+    var card=document.createElement("div"); card.className="chartcard";
+    card.innerHTML='<div class="ch-hd"><span class="dot" style="background:'+c.color+'"></span>'+
+      '<span class="tt" style="color:'+c.color+'">'+esc(c.name)+' 得分率</span>'+
+      '<span class="sm">最新 '+vals[vals.length-1].toFixed(1)+'% ｜ 最高 '+Math.max.apply(null,vals).toFixed(1)+'%</span></div>';
+    var box=document.createElement("div"); box.className="chartbox"; box.style.height="250px";
+    card.appendChild(box);
+    wrap.appendChild(card);
+    drawChart(box,[{name:c.name,color:c.color,axis:"left",pts:c.pts}],{h:250,percent:true,showLabels:rShowLabels});
   });
-  drawChart(document.getElementById("rChartBox"),series,{h:320,percent:true});
-  document.getElementById("rHint").innerHTML="单位：% 。得分率 = 该科得分 ÷ 该科满分，<b>不受满分调整影响，可直接横向比较</b>。";
+  var quizNote = (quizCount && rShowTotal) ? "｜总分图与上方三张 KPI 已跳过 "+quizCount+" 次随堂小测（可能非全科考试，总分不可比；断线处即为该次），单科得分率不受影响" : "";
+  document.getElementById("rHint").innerHTML="共 "+chartList.length+" 张图：总分 + 勾选科目各自独立成图，纵轴为得分率。<b>得分率 = 得分 ÷ 满分，不受满分调整影响，可直接横向比较。</b>"+quizNote;
 }
 
 /* ============ Tab 4: 我的 ============ */
@@ -1476,7 +1649,7 @@ function seedDemo(){
     var lines=defLines(7);
     SUBJECTS[7].forEach(function(s,i){
       var base=scores[i];
-      if(subjLines){
+      if(subjLines && subjLines[i]){
         lines[s]={ aPlus:subjLines[i][0], a:subjLines[i][1], b:subjLines[i][2] };
       }
     });
@@ -1491,8 +1664,9 @@ function seedDemo(){
     [[88,80,68],[92,85,72],[86,78,66],[90,83,70],[86,79,67]],[452,418,378]));
   state.records.push(mk("2026-06","期末",[91,94,89,92,88],
     [[88,80,68],[92,85,72],[86,78,66],[90,83,70],[86,79,67]],[452,418,378]));
-  state.records.push(mk("2026-07","随堂小测",[89,92,93,91,90],
-    [[90,83,70],[94,87,74],[88,80,68],[92,85,72],[88,81,69]],[460,425,385]));
+  // 末次为「随堂小测」，且只考了 3 门 —— 演示"非全科不计入总分"的行为：总分图在该处断线，单科图照常
+  state.records.push(mk("2026-07","随堂小测",[89,92,93,null,null],
+    [[90,83,70],[94,87,74],[88,80,68],null,null],null));
   currentKid=k.id; currentGrade=7;
   save(); boot(false);
   toast("已载入示例数据");
@@ -1606,6 +1780,12 @@ function init(){
     this.textContent=bShowLines?"显示分数线":"隐藏分数线";
     renderBoard();
   };
+  document.getElementById("bLabelOn").onclick=function(){
+    bShowLabels=!bShowLabels;
+    this.classList.toggle("on",bShowLabels);
+    this.textContent=bShowLabels?"数据标签":"隐藏标签";
+    renderBoard();
+  };
   document.getElementById("bAllSubj").onclick=function(){
     var g=getGradeFor("bGrade"); SUBJECTS[g].forEach(function(s){ bSubjSel[s]=true; });
     renderBoardSubjChips(); renderBoard();
@@ -1617,6 +1797,26 @@ function init(){
 
   // Tab 3 控制
   document.getElementById("rGrade").onchange=function(){ renderRateSubjChips(); renderRate(); };
+  document.getElementById("rTotalOn").onclick=function(){
+    rShowTotal=!rShowTotal;
+    this.classList.toggle("on",rShowTotal);
+    this.textContent=rShowTotal?"显示总分":"隐藏总分";
+    renderRate();
+  };
+  document.getElementById("rLabelOn").onclick=function(){
+    rShowLabels=!rShowLabels;
+    this.classList.toggle("on",rShowLabels);
+    this.textContent=rShowLabels?"数据标签":"隐藏标签";
+    renderRate();
+  };
+  document.getElementById("rAllSubj").onclick=function(){
+    var g=getGradeFor("rGrade"); SUBJECTS[g].forEach(function(s){ rSubjSel[s]=true; });
+    renderRateSubjChips(); renderRate();
+  };
+  document.getElementById("rNoSubj").onclick=function(){
+    var g=getGradeFor("rGrade"); SUBJECTS[g].forEach(function(s){ rSubjSel[s]=false; });
+    renderRateSubjChips(); renderRate();
+  };
 
   // Tab 4
   document.getElementById("expBtn").onclick=exportJSON;
