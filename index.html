@@ -80,10 +80,11 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .subjcard .nm{font-weight:700;font-size:14px}
 .subjcard .full{font-size:12px;color:var(--sub)}
 .subjcard .full select{width:auto;display:inline-block;padding:4px 8px;font-size:12px;border-radius:8px;margin-left:4px}
-.linegrid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:9px;padding-top:9px;border-top:1px dashed var(--line)}
-.linegrid .lf{display:block;font-size:11px;font-weight:700;margin-bottom:3px}
-.linegrid input{padding:6px 8px;font-size:13px;border-radius:8px;background:#fff}
-.linegrid .fixline{padding:6px 8px;font-size:12.5px;border-radius:8px;background:#f3f5f9;border:1px solid var(--line);color:var(--sub);font-weight:700;text-align:center}
+.linegrid{display:flex;flex-wrap:wrap;gap:7px 12px;margin-top:8px;padding-top:8px;border-top:1px dashed var(--line)}
+.linegrid>div{display:flex;align-items:center;gap:5px;min-width:0}
+.linegrid .lf{font-size:11px;font-weight:700;white-space:nowrap;flex:0 0 auto}
+.linegrid input{padding:6px 7px;font-size:13px;border-radius:8px;background:#fff;width:56px;flex:0 0 auto}
+.linegrid .fixline{padding:6px 8px;font-size:12px;border-radius:8px;background:#f3f5f9;border:1px solid var(--line);color:var(--sub);font-weight:700;flex:0 0 auto;white-space:nowrap}
 .subjcard.totalcard{background:#fffdf7;border-color:#f0e2c4}
 .subjcard.totalcard .nm{color:#b26a00}
 .entry{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line2)}
@@ -308,7 +309,7 @@ ul.steps b{color:var(--txt)}
       </div>
     </div>
   </section>
-  <footer class="ver">逐光记 · 版本 <span id="verTag">v2026.10.18-2</span> · 高中五线仅按总分划线</footer>
+  <footer class="ver">逐光记 · 版本 <span id="verTag">v2026.10.19-1</span> · 自定义满分显示实际数值 · 分数线标签与输入框同行</footer>
 </main>
 </div>
 
@@ -780,7 +781,7 @@ function renderSubjForm(){
       '<div class="top"><div class="nm" style="color:'+colorOf(s)+'">'+esc(s)+'</div>'+
       '<div class="full">满分<select data-f="'+esc(s)+'">'+
         opts.map(function(v){ return '<option value="'+v+'"'+(v===fv?' selected':'')+'>'+v+'</option>'; }).join("")+
-        '<option value="custom"'+(fv!==100&&fv!==120&&fv!==150&&fv!==200&&fv!==300?' selected':'')+'>自定义</option>'+
+        '<option value="custom">自定义</option>'+
       '</select></div></div>'+
       '<input type="number" inputmode="decimal" step="0.5" min="0" data-s="'+esc(s)+'" '+
         'placeholder="输入分数（可留空）" value="'+(cur==null?"":cur)+'">'+
